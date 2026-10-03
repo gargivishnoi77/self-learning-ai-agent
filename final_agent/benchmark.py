@@ -20,7 +20,7 @@ TEST_TASKS = [
 
 
 def create_test_csv():
-    """Create a temporary CSV file for testing the data tool."""
+    """Create a temporary CSV file for the data-tool test."""
 
     data = [
         ["name", "age", "score"],
@@ -95,9 +95,20 @@ def print_learning_report():
     print("LEARNING REPORT")
     print("=" * 60)
 
-    total = report.get("total_experiences", 0)
-    successful = report.get("successful", 0)
-    failed = report.get("failed", 0)
+    total = report.get(
+        "total_experiences",
+        0
+    )
+
+    successful = report.get(
+        "successful",
+        0
+    )
+
+    failed = report.get(
+        "failed",
+        0
+    )
 
     overall_rate = (
         successful / total * 100
@@ -112,12 +123,27 @@ def print_learning_report():
 
     print("\nTool performance:")
 
-    tools = report.get("tools", {})
+    tools = report.get(
+        "tools",
+        {}
+    )
 
     for tool, stats in tools.items():
 
-        total_tool = stats.get("total", 0)
-        successful_tool = stats.get("successful", 0)
+        successful_tool = stats.get(
+            "success",
+            0
+        )
+
+        failed_tool = stats.get(
+            "failed",
+            0
+        )
+
+        total_tool = (
+            successful_tool
+            + failed_tool
+        )
 
         tool_rate = (
             successful_tool / total_tool * 100
@@ -155,13 +181,6 @@ def run_benchmark():
 
         # =========================================================
         # SECOND PASS
-        # =========================================================
-        #
-        # The same tasks are run again.
-        #
-        # This demonstrates that the agent can use strategies
-        # learned from previous executions.
-        #
         # =========================================================
 
         second_success, second_failed = run_test_pass(

@@ -10,17 +10,13 @@ from memory import (
 
 def strategy_report(task):
 
-    relevant = get_relevant_memory(
-        task
-    )
+    relevant = get_relevant_memory(task)
 
     report = {}
 
     for experience in relevant:
 
-        tool = experience.get(
-            "tool"
-        )
+        tool = experience.get("tool")
 
         if not tool:
             continue
@@ -34,18 +30,12 @@ def strategy_report(task):
             }
         )
 
-        if experience.get(
-            "success",
-            False
-        ):
+        if experience.get("success", False):
             item["success"] += 1
         else:
             item["failed"] += 1
 
-        if experience.get(
-            "retried",
-            False
-        ):
+        if experience.get("retried", False):
             item["retried"] += 1
 
     for item in report.values():
@@ -85,16 +75,10 @@ def learning_report():
     successful = sum(
         1
         for item in memory
-        if item.get(
-            "success",
-            False
-        )
+        if item.get("success", False)
     )
 
-    failed = (
-        len(memory)
-        - successful
-    )
+    failed = len(memory) - successful
 
     tools = {}
 
@@ -109,19 +93,31 @@ def learning_report():
 
             tools[tool] = {
                 "success": 0,
-                "failed": 0
+                "failed": 0,
+                "total": 0,
+                "successful": 0
             }
 
-        if item.get(
-            "success",
-            False
-        ):
+        if item.get("success", False):
 
             tools[tool]["success"] += 1
+            tools[tool]["successful"] += 1
 
         else:
 
             tools[tool]["failed"] += 1
+
+        tools[tool]["total"] += 1
+
+    for tool, stats in tools.items():
+
+        total = stats["total"]
+
+        stats["success_rate"] = (
+            stats["successful"] / total
+            if total
+            else 0
+        )
 
     return {
 
