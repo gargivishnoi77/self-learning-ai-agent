@@ -1,152 +1,181 @@
 # Self-Learning AI Agent
 
-A modular AI agent that can plan tasks, select appropriate tools, evaluate results, remember previous experiences, reflect on failures, and reuse successful strategies on future tasks.
+A modular AI agent built in Python that can **plan tasks, select specialized tools, evaluate results, learn from previous executions, and reuse successful strategies**.
 
-This project explores how an AI agent can go beyond a basic chatbot by planning tasks, using tools, evaluating results, storing previous experiences, and reusing successful strategies..
-
----
-
-## 🚀 Overview
-
-The Self-Learning AI Agent accepts a natural-language task and determines how to solve it.
-
-Instead of using a single fixed workflow, the agent can:
-
-* Understand the type of task
-* Create an execution plan
-* Select an appropriate tool
-* Execute the task
-* Evaluate the result
-* Store the experience in persistent memory
-* Reflect and retry when necessary
-* Learn which strategies work for different task types
-* Reuse successful strategies on future tasks
-
-The project also supports optional LLM-based planning. When an API key is unavailable, the system falls back to its local planning system.
+The project demonstrates how an agent can move beyond simple chatbot behavior by combining planning, tool execution, evaluation, reflection, persistent memory, and strategy reuse.
 
 ---
 
-## 🧠 Core Architecture
+## 🚀 Project Overview
+
+The agent accepts a natural-language task and determines how it should be solved.
+
+Instead of relying on a single fixed workflow, it can:
+
+- Understand the task type
+- Create an execution plan
+- Select an appropriate tool
+- Execute the task
+- Evaluate the result
+- Reflect when an attempt fails
+- Retry using an alternative strategy
+- Store the experience in persistent memory
+- Reuse successful strategies on future tasks
+
+### Core Idea
 
 ```text
-                    USER TASK
-                        │
-                        ▼
-                 ┌──────────────┐
-                 │ Task Planner │
-                 └──────┬───────┘
-                        │
-                        ▼
-              ┌───────────────────┐
-              │ Strategy Selector │
-              └─────────┬─────────┘
-                        │
-                        ▼
-                ┌───────────────┐
-                │   Tool Layer  │
-                └───────┬───────┘
-                        │
-          ┌─────────────┼─────────────┐
-          ▼             ▼             ▼
-     Calculator      Research       Coding
-          │             │             │
-          ├─────────────┼─────────────┤
-          ▼             ▼             ▼
-       Files           Data       Word Counter
-                        │
-                        ▼
-                 ┌────────────┐
-                 │  Evaluator │
-                 └─────┬──────┘
+                    User Task
                        │
-              ┌────────┴────────┐
-              │                 │
-           Success            Failure
-              │                 │
-              ▼                 ▼
-         Save Memory       Reflection
-              │                 │
-              │                 ▼
-              │               Retry
-              │                 │
+                       ▼
+                ┌──────────────┐
+                │ Task Planner │
+                └──────┬───────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Strategy Select │
               └────────┬────────┘
-                       ▼
-              Persistent Memory
                        │
                        ▼
-              Better Strategy
-              for Future Tasks
-```
+                ┌─────────────┐
+                │ Tool Execute│
+                └──────┬──────┘
+                       │
+                       ▼
+                 ┌───────────┐
+                 │ Evaluator │
+                 └─────┬─────┘
+                       │
+                 ┌─────┴─────┐
+                 │           │
+              Success      Failure
+                 │           │
+                 │      ┌─────▼─────┐
+                 │      │ Reflection│
+                 │      └─────┬─────┘
+                 │            │
+                 │          Retry
+                 │            │
+                 └──────┬─────┘
+                        ▼
+                 ┌─────────────┐
+                 │    Memory   │
+                 └──────┬──────┘
+                        │
+                        ▼
+                 Learned Strategy
+````
+
+---
 
 ## ✨ Features
 
 ### 1. Task Planning
 
-The planner identifies the type of task and creates an appropriate execution plan.
+The agent identifies the type of task and creates an appropriate execution plan.
 
 Supported task categories include:
 
-* Calculations
+* Arithmetic
 * Word counting
+* Multi-step tasks
 * Research
 * Coding
 * File operations
 * Data analysis
-* Multi-step tasks
 
 ---
 
-### 2. Tool-Based Execution
+### 2. Specialized Tools
 
-The agent uses specialized tools instead of trying to solve every task through one method.
+The agent uses different tools depending on the task.
 
-Current tools include:
+| Tool                    | Purpose                       |
+| ----------------------- | ----------------------------- |
+| `calculator`            | Basic arithmetic              |
+| `expression_calculator` | Safe mathematical expressions |
+| `word_counter`          | Count words in text           |
+| `research_tool`         | Retrieve research information |
+| `coding_tool`           | Handle supported coding tasks |
+| `file_tool`             | Work with local project files |
+| `data_tool`             | Analyze CSV and JSON data     |
 
-| Tool                    | Purpose                                  |
-| ----------------------- | ---------------------------------------- |
-| `calculator`            | Basic arithmetic                         |
-| `expression_calculator` | Safe mathematical expressions            |
-| `word_counter`          | Counts words in text                     |
-| `research_tool`         | Searches Wikipedia for information       |
-| `coding_tool`           | Handles selected Python coding tasks     |
-| `file_tool`             | Reads, lists, and searches project files |
-| `data_tool`             | Analyzes CSV and JSON data               |
+This modular design makes it possible to add new capabilities without redesigning the entire agent.
 
 ---
 
 ### 3. Multi-Step Task Execution
 
-The agent can break a task into multiple steps and pass the result of one step into the next.
+The agent can break a task into multiple steps and pass information between them.
 
 Example:
 
 ```text
-Calculate 10 % 3 and then count words learning agents improve
+Calculate 10 % 3
+        ↓
+Result = 1
+        ↓
+Count words in "learning agents improve"
+        ↓
+Result = 3
+        ↓
+Overall task = Successful
 ```
 
-The agent performs:
-
-```text
-Step 1 → Calculate 10 % 3
-       → Result: 1
-
-Step 2 → Count words learning agents improve
-       → Result: 3
-```
-
-The previous result can also be provided as context for subsequent steps.
+The agent maintains execution context so later steps can use previous results.
 
 ---
 
-### 4. Persistent Memory
+### 4. Evaluation
 
-The agent stores previous experiences in:
+Every tool execution is evaluated to determine whether it succeeded.
 
 ```text
-memory.json
+Tool Execution
+      ↓
+    Result
+      ↓
+   Evaluator
+      ↓
+Success / Failure
 ```
 
-Each experience can contain information such as:
+This provides the feedback signal required for learning and retry behavior.
+
+---
+
+### 5. Reflection & Retry
+
+When an execution fails, the agent can reflect on the failure and attempt an alternative strategy.
+
+Example:
+
+```text
+Task
+ ↓
+Initial Strategy
+ ↓
+Failure
+ ↓
+Reflection
+ ↓
+Alternative Strategy
+ ↓
+Retry
+ ↓
+Success
+```
+
+The retry mechanism is intentionally controlled rather than allowing unlimited attempts.
+
+---
+
+### 6. Persistent Memory
+
+The agent stores previous experiences in `memory.json`.
+
+Stored information includes:
 
 * Task
 * Task type
@@ -154,132 +183,109 @@ Each experience can contain information such as:
 * Result
 * Success/failure
 * Retry information
-* Context
+* Execution context
 * Timestamp
 
-This allows the agent to use information from previous executions.
+This allows the agent to use previous experience when handling future tasks.
+
+> `memory.json` is intentionally excluded from Git because it contains runtime-generated experience data.
 
 ---
 
-### 5. Strategy Selection
+### 7. Strategy Reuse
 
-The strategy module analyzes previous experiences and selects compatible strategies for future tasks.
+The strategy selector searches previous experiences for successful strategies that are compatible with the current task.
 
 For example:
 
 ```text
-Previous task
-      ↓
-Tool used
-      ↓
-Was it successful?
-      ↓
-Store experience
-      ↓
-Future similar task
-      ↓
-Reuse successful strategy
+Previous Experience
+
+Modulo task
+     ↓
+calculator → failed
+     ↓
+expression_calculator → successful
+
+
+Future Modulo Task
+        ↓
+Memory
+        ↓
+expression_calculator
+        ↓
+Success
 ```
 
-The system avoids blindly selecting a previously successful tool when that tool is incompatible with the current task type.
-
----
-
-### 6. Reflection and Retry
-
-When an execution fails, the agent can reflect on the result and attempt a controlled retry.
-
-The current implementation limits retries to prevent uncontrolled execution loops.
-
-```text
-Task
- ↓
-Execute
- ↓
-Evaluate
- ↓
-Failure?
- ↓
-Reflection
- ↓
-Retry
- ↓
-Evaluate Again
-```
-
----
-
-### 7. Evaluator
-
-The evaluator determines whether a tool execution produced an acceptable result.
-
-This provides a feedback signal that can be stored in memory and used by the strategy-selection system.
+This is the main mechanism behind the project's **self-learning behavior**.
 
 ---
 
 ### 8. Optional LLM Planning
 
-The project includes an optional LLM planner.
+The project also contains an optional LLM planner.
 
-If an OpenAI API key is available, the agent can use an LLM for planning.
+The local planner can operate without an API key, while the LLM planner can be enabled when API access is available.
 
-If the API key is unavailable, the agent continues using the local planner.
-
-This makes the core system usable without requiring an external LLM API.
+This keeps the core agent usable even without an external LLM service.
 
 ---
 
-## 🔄 How the Agent Learns
+# 🧠 Architecture
 
-The learning process is based on previous execution experiences.
+The project follows a modular architecture:
 
 ```text
-             New Task
-                 │
-                 ▼
-          Identify Task Type
-                 │
-                 ▼
-       Check Previous Memory
-                 │
-                 ▼
-       Select Compatible Tool
-                 │
-                 ▼
-             Execute
-                 │
-                 ▼
-             Evaluate
-                 │
-          ┌──────┴──────┐
-          │             │
-       Success        Failure
-          │             │
-          ▼             ▼
-    Store Success    Reflect
-          │             │
-          │             ▼
-          │           Retry
-          │             │
-          └──────┬──────┘
-                 ▼
-          Update Experience
-                 │
-                 ▼
-       Future Strategy Reuse
+                      ┌──────────────┐
+                      │     User     │
+                      └──────┬───────┘
+                             ↓
+                      ┌──────────────┐
+                      │    Planner   │
+                      └──────┬───────┘
+                             ↓
+                   ┌──────────────────────┐
+                   │ Strategy Selection   │
+                   └──────────┬───────────┘
+                              ↓
+                      ┌───────────────┐
+                      │ Tool Registry │
+                      └───────┬───────┘
+                              ↓
+                ┌─────────────────────────┐
+                │      Tool Execution     │
+                │                         │
+                │ Calculator              │
+                │ Research                │
+                │ Coding                  │
+                │ Files                   │
+                │ Data                    │
+                │ Word Counter            │
+                └────────────┬────────────┘
+                             ↓
+                      ┌─────────────┐
+                      │  Evaluator  │
+                      └──────┬──────┘
+                             ↓
+                      ┌─────────────┐
+                      │ Reflection  │
+                      └──────┬──────┘
+                             ↓
+                      ┌─────────────┐
+                      │   Memory    │
+                      └──────┬──────┘
+                             ↓
+                      Strategy Reuse
 ```
 
-The important idea is that the agent does not modify its underlying model weights. Instead, its improvement comes from **persistent experience, strategy selection, and reuse of successful approaches**.
-
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
 ```text
-self-learning-ai-agent-final/
+self-learning-ai-agent/
 │
 ├── final_agent/
-│   │
 │   ├── agent.py
 │   ├── planner.py
 │   ├── strategy.py
@@ -292,98 +298,51 @@ self-learning-ai-agent-final/
 │   ├── benchmark.py
 │   ├── main.py
 │   │
-│   ├── memory.json
+│   ├── README.md
 │   ├── .env.example
-│   ├── .gitignore
-│   └── README.md
+│   └── .gitignore
 │
-└── venv/
+├── .gitignore
+└── README.md
 ```
-
-### Main Modules
-
-**`agent.py`**
-Core agent loop that coordinates planning, execution, evaluation, memory, reflection, and retries.
-
-**`planner.py`**
-Classifies tasks and creates local execution plans.
-
-**`strategy.py`**
-Selects compatible strategies based on previous successful experiences.
-
-**`memory.py`**
-Handles persistent experience storage and retrieval.
-
-**`learning.py`**
-Generates learning and strategy performance reports.
-
-**`reflection.py`**
-Provides reflection information used during retry.
-
-**`evaluator.py`**
-Evaluates execution results.
-
-**`tools.py`**
-Contains the agent's available tools.
-
-**`llm_planner.py`**
-Optional LLM-based planning component.
-
-**`benchmark.py`**
-Runs the validation benchmark and tests learning/reuse behavior.
 
 ---
 
-## ⚙️ Installation
+# 🛠️ Technologies
 
-### 1. Clone the repository
+* **Python**
+* **OpenAI API** — optional LLM planning
+* **Python AST** — safe mathematical expression evaluation
+* **JSON** — persistent memory
+* **CSV** — data analysis
+* **urllib** — research requests
+* **Git & GitHub** — version control
+
+---
+
+# ⚙️ Installation
+
+Clone the repository:
 
 ```bash
-git clone <your-github-repository-url>
-cd self-learning-ai-agent-final
+git clone https://github.com/gargivishnoi77/self-learning-ai-agent.git
+cd self-learning-ai-agent
 ```
 
-### 2. Create a virtual environment
+Create and activate a virtual environment:
 
-Windows:
+### Windows
 
 ```powershell
 python -m venv venv
+.\venv\Scripts\activate
 ```
 
-Activate it:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
+Install dependencies:
 
 ```powershell
 pip install openai python-dotenv
 ```
-
-### 4. Configure the environment
-
-Copy:
-
-```text
-.env.example
-```
-
-to:
-
-```text
-.env
-```
-
-Add your API key if you want to enable optional LLM planning.
-
-Never commit `.env` or expose API keys publicly.
-
----
-
-## ▶️ Running the Agent
 
 Move into the agent directory:
 
@@ -391,177 +350,184 @@ Move into the agent directory:
 cd final_agent
 ```
 
-Run:
+---
+
+# ▶️ Run the Agent
+
+Start the interactive agent:
 
 ```powershell
 python main.py
 ```
 
-You can then enter tasks such as:
+You can enter tasks such as:
 
 ```text
 Calculate 25 + 75
 ```
 
-or:
-
 ```text
-Research machine learning
+Count words artificial intelligence agents
 ```
-
-or:
-
-```text
-Write a Python function to reverse a string
-```
-
-or:
 
 ```text
 Calculate 10 % 3 and then count words learning agents improve
 ```
 
+```text
+Write a Python function to reverse a string
+```
+
+```text
+Research machine learning
+```
+
 ---
 
-## 🧪 Benchmark
+# 🧪 Benchmark
 
-The project includes a validation benchmark covering different capabilities:
+The project includes a benchmark containing **10 different tasks** covering multiple capabilities.
+
+The benchmark tests:
 
 * Arithmetic
-* Expression evaluation
+* Modulo
+* Division
 * Word counting
 * Multi-step execution
 * Coding
 * File operations
 * Research
 * Data analysis
-* Strategy reuse
 
-Run:
+The benchmark was executed twice:
 
-```powershell
-python benchmark.py
+```text
+                 First Pass    Second Pass
+Successful           10/10         10/10
+Failed                0/10          0/10
+Success Rate        100%          100%
 ```
 
-### Latest Validation Result
+The second pass was specifically used to validate **strategy reuse from previous experience**.
 
-The V6 validation benchmark used **10 tasks per pass**.
+### Validation Result
 
-| Metric                    |  Result |
-| ------------------------- | ------: |
-| First-pass success        | 10 / 10 |
-| First-pass success rate   |    100% |
-| Second-pass success       | 10 / 10 |
-| Second-pass success rate  |    100% |
-| Learning/reuse validation |  PASSED |
+```text
+First pass success rate:   100%
+Second pass success rate:  100%
 
-The second pass demonstrated that previously successful compatible strategies could be reused for subsequent executions.
+Learning / reuse validation: PASSED
+```
 
-The benchmark also exercised the research, coding, file, data, calculation, word-counting, and multi-step capabilities.
+The benchmark also generated persistent agent experiences that were used by the strategy-selection system during subsequent executions.
 
 ---
 
-## 🧩 Design Principles
+# 🔄 Learning Workflow
 
-### Modular
+The agent's learning loop can be summarized as:
 
-Each major responsibility is separated into its own module.
+```text
+Task
+ ↓
+Plan
+ ↓
+Select Strategy
+ ↓
+Execute Tool
+ ↓
+Evaluate
+ ↓
+ ┌───────────────┐
+ │               │
+Success        Failure
+ │               │
+ ↓               ↓
+Store          Reflect
+Experience       ↓
+ │             Retry
+ └───────┬───────┘
+         ↓
+      Memory
+         ↓
+  Strategy Reuse
+```
 
-### Tool-Based
-
-Different task types can use specialized tools.
-
-### Persistent
-
-Experiences are stored beyond a single execution.
-
-### Evaluated
-
-Results are evaluated instead of assuming every tool execution succeeded.
-
-### Reflective
-
-Failures can trigger reflection and a controlled retry.
-
-### Compatibility-Aware
-
-Previously successful strategies are considered only when they are compatible with the current task.
-
-### Fallback-Oriented
-
-The agent can continue operating with local planning when the optional LLM planner is unavailable.
-
----
-
-## ⚠️ Current Limitations
-
-This project is a practical learning-oriented agent architecture and has several limitations.
-
-* The LLM planner is optional and depends on API availability.
-* The local planner is rule-based.
-* The research tool currently uses Wikipedia.
-* The coding tool contains built-in handling for selected coding tasks rather than being a general autonomous coding system.
-* File and data operations are intentionally restricted to the local project environment.
-* Persistent learning is based on stored experiences and strategy reuse rather than model fine-tuning.
-* The benchmark demonstrates controlled task performance but is not a substitute for large-scale evaluation.
+The system therefore does not simply execute tasks independently. Previous execution outcomes influence future strategy selection.
 
 ---
 
-## 🔮 Future Improvements
+# 🔐 Security & Design Considerations
+
+The project uses several safeguards for local execution:
+
+* Mathematical expressions are parsed using Python's AST rather than unrestricted `eval`.
+* File operations are restricted to the project directory.
+* `.env` files are excluded from Git.
+* Virtual environments are excluded from Git.
+* Runtime memory is excluded from Git.
+* Retry attempts are limited to avoid uncontrolled execution loops.
+
+---
+
+# 📌 Current Status
+
+**V6 Core — Validated**
+
+Current implementation includes:
+
+* Task planning
+* Specialized tools
+* Multi-step execution
+* Execution context
+* Evaluation
+* Reflection
+* Controlled retry
+* Persistent memory
+* Strategy selection
+* Strategy reuse
+* Benchmarking
+* Optional LLM planning
+
+---
+
+# 🚧 Limitations
+
+The current version is intentionally focused on demonstrating the agent architecture rather than being a general-purpose autonomous system.
+
+Current limitations include:
+
+* The local planner uses predefined task patterns.
+* The available tools are limited to the implemented tool registry.
+* LLM planning is optional and depends on API availability.
+* Research functionality depends on network access.
+* Coding capabilities currently cover supported local coding tasks rather than arbitrary software development.
+* Learning is based on stored execution experiences rather than model parameter updates.
+
+---
+
+# 🔮 Future Improvements
 
 Possible future extensions include:
 
-* More advanced LLM-based planning
-* Specialized research and coding agents
-* Better task decomposition
-* More robust failure analysis
+* More advanced task decomposition
+* Additional specialized tools
+* Improved LLM-based planning
+* More sophisticated experience retrieval
 * Experiment-based strategy selection
-* Semantic memory retrieval
-* Vector-based long-term memory
-* More sophisticated evaluation metrics
-* Web and API tools
-* Agent monitoring dashboard
-* Parallel tool execution
-* Improved autonomous coding capabilities
+* Long-term memory improvements
+* Agent performance dashboard
+* Specialized research and coding agents
+* More extensive evaluation benchmarks
 
 ---
 
-## 🎯 Project Goal
+# 🎯 Project Goal
 
-The goal of this project is to understand and implement the fundamental components behind modern AI agents:
+The goal of this project is to explore how **planning, tools, evaluation, memory, reflection, and strategy reuse can be combined to create an AI agent that improves its task-solving behavior through experience.**
 
-```text
-Planning
-   ↓
-Tool Use
-   ↓
-Execution
-   ↓
-Evaluation
-   ↓
-Reflection
-   ↓
-Memory
-   ↓
-Strategy Selection
-   ↓
-Experience Reuse
-```
-
-Rather than building only a chatbot, this project focuses on creating an agent that can **use tools, evaluate its actions, remember experiences, and reuse successful strategies**.
-
----
-
-## 🛠️ Technologies
-
-* Python
-* OpenAI API (optional)
-* python-dotenv
-* JSON
-* CSV
-* Wikipedia API
-* Python AST
-* Modular agent architecture
+Rather than building another chatbot, this project focuses on the **agentic workflow behind task execution and learning**.
 
 ---
 
@@ -569,12 +535,12 @@ Rather than building only a chatbot, this project focuses on creating an agent t
 
 **Gargi Vishnoi**
 
-B.Tech Computer Science & Artificial Intelligence
+B.Tech — Computer Science & Artificial Intelligence
+
+GitHub: [@gargivishnoi77](https://github.com/gargivishnoi77)
 
 ---
 
-## 📌 Status
+## 📄 License
 
-**V6 Core — Validated**
-
-The core agent architecture, tool layer, memory system, strategy selection, reflection, controlled retry, multi-step execution, and benchmark validation are implemented.
+This project is intended as a learning and portfolio project.
